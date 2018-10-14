@@ -14,6 +14,11 @@ webカメラ等別のカメラで撮影した場合は細かいパラメータ�
 https://www.pyimagesearch.com/2016/04/11/finding-extreme-points-in-contours-with-opencv/
 https://postd.cc/image-processing-101/
 
+
+------------------追加内容
+翻訳する単語のリストから1文字の単語，冠詞，不定詞，人称代名詞を除くようにしました．
+結果をresult_dictという辞書に格納させました．
+英語の発音をen_soundというディレクトリに保存できるようにしました．
 """
 
 
@@ -91,7 +96,7 @@ right_side = tuple(sorted_top100_lst[-1])
 # finger_and_contoursに指の左端と右端に印をつけた画像をコピー
 # 可視化する際は　plt.imshow(finger_and_contours)
 finger_and_contours = np.copy(finger)
- 
+
 
 #cv2.drawContours(finger_and_contours, large_contours, -1, (255,0,0))
 cv2.circle(finger_and_contours, left_side, 50, (255, 0, 0), -1)
@@ -134,7 +139,7 @@ headers = {'Ocp-Apim-Subscription-Key': subscription_key }
 """
 
 #"""
-#----2. Localから取得する場合 ----#  
+#----2. Localから取得する場合 ----#
 # 画像へのパスをimage_fileに代入
 image_file = "trimming.png"
 image_data = open(image_file, "rb").read()
@@ -177,14 +182,52 @@ for line in analysis["regions"][0]['lines']:
     for word in line["words"]:
         lst.append(word["text"])
 
+lst = list(map(lambda x : x.lower(), lst))
+    
+
+#冠詞，人称代名詞，不定詞および，一文字の場合はリストから削除する．
+del_str = "a the an i my me mine you your yours he his him she her hers "+\
+"they their them theirs it its we our us ours to"
+del_lst = del_str.split(" ")
+
+
+lst = list(filter(lambda x: len(x) != 1, lst))
+lst = list(filter(lambda x: x not in del_lst, lst))
+
+
+#Azureに投げた画像を表示
+plt.imshow(dstImg)
 
 #実際に翻訳
 translator = Translator()
 
-for i in lst:
+
+result_dict = {}
+for num, i in enumerate(lst):
+    meaning = translator.translate(text=i, dest='ja').text
+    result_dict[num] = {"en" : i, "ja" : meaning}
     print(i)
-    print(translator.translate(text=i, dest='ja').text)
+    print(meaning)
     print('\n')
 
-#Azureに投げた画像を表示
-plt.imshow(dstImg)
+
+
+# -------------- 調べた単語の発音をwavファイルで"en_sound"ディレクトリに保存する．
+#en_soundが存在するば削除する.
+os.system('rm -rf en_sound')
+os.system('mkdir en_sound')
+for num, i in enumerate(lst):
+    file_name = 'en_sound/en_{}.wav'.format(num)
+    os.system('espeak ' + i + ' -w ' + file_name)
+    
+    
+"""  
+# 文章を入力する場合の参考  
+text = "Hello world."
+text_lst = text.split(" ")
+speak_text = "\ ".join(text_lst)
+speak_text = " " + speak_text
+"""
+
+#"example.wav"として音声ファイルを保存
+#os.system('espeak' + speak_text  + ' -w example.wav')
