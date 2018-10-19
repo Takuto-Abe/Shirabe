@@ -122,7 +122,7 @@ cv2.imwrite('trimming.png',dstImg)
 #--------------------- API情報を入力 -----------------------------------
 # キーを入力
 # このキーは阿部のもの
-subscription_key = "5e01704269724a17b9f63e16dba2c02f"
+subscription_key = ""
 assert subscription_key
 
 vision_base_url = "https://eastasia.api.cognitive.microsoft.com/vision/v1.0/"
