@@ -121,8 +121,12 @@ cv2.imwrite('trimming.png',dstImg)
 # --------------------------------  Azureの利用 -------------------------------
 #--------------------- API情報を入力 -----------------------------------
 # キーを入力
-# このキーは阿部のもの
-subscription_key = ""
+
+key_file = open('../key/key_cog_at.txt')
+key = key_file.read()
+key_file.close()
+
+subscription_key = key
 assert subscription_key
 
 vision_base_url = "https://eastasia.api.cognitive.microsoft.com/vision/v1.0/"
