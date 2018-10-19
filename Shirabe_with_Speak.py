@@ -35,6 +35,8 @@ import os
 import matplotlib
 from PIL import Image
 from googletrans import Translator
+import subprocess
+from time import sleep
 """
 google transはそのまま使うとエラーが生じるので以下urlを参考にパッチを利用する
 https://stackoverflow.com/questions/52455774/googletrans-stopped-working-with-error-nonetype-object-has-no-attribute-group
@@ -105,11 +107,11 @@ cv2.circle(finger_and_contours, right_side, 50, (255, 0, 0), -1)
 
 # ----------   画像をトリミング --------------
 # height，widthは今後調整する必要あり
-height = 200
-width = 700
+height = right_side[0]-left_side[0]
+width = (right_side[0]-left_side[0])*3
 
 y = left_side[1]
-x = left_side[0]-100
+x = left_side[0]-50
 
 dstImg = finger[y-height:y,x:x+width]
 
@@ -120,7 +122,7 @@ cv2.imwrite('trimming.png',dstImg)
 #--------------------- API情報を入力 -----------------------------------
 # キーを入力
 # このキーは阿部のもの
-subscription_key = "27afa3415d5e4c60b68a58d4c2c409ce"
+subscription_key = "5e01704269724a17b9f63e16dba2c02f"
 assert subscription_key
 
 vision_base_url = "https://eastasia.api.cognitive.microsoft.com/vision/v1.0/"
@@ -183,7 +185,7 @@ for line in analysis["regions"][0]['lines']:
         lst.append(word["text"])
 
 lst = list(map(lambda x : x.lower(), lst))
-    
+
 
 #冠詞，人称代名詞，不定詞および，一文字の場合はリストから削除する．
 del_str = "a the an i my me mine you your yours he his him she her hers "+\
@@ -219,15 +221,36 @@ os.system('mkdir en_sound')
 for num, i in enumerate(lst):
     file_name = 'en_sound/en_{}.wav'.format(num)
     os.system('espeak ' + i + ' -w ' + file_name)
-    
-    
-"""  
-# 文章を入力する場合の参考  
+
+
+
+"""
+# 文章を入力する場合の参考
 text = "Hello world."
 text_lst = text.split(" ")
 speak_text = "\ ".join(text_lst)
 speak_text = " " + speak_text
 """
 
-#"example.wav"として音声ファイルを保存
-#os.system('espeak' + speak_text  + ' -w example.wav')
+
+# -------------- 調べた単語の意味をwavファイルで"ja_sound"ディレクトリに保存する．
+def jtalk(t, num):
+    open_jtalk = ['open_jtalk']
+    mech = ['-x', '/usr/local/Cellar/open-jtalk/1.10_1/dic']
+    htsvoice = ['-m', '/usr/local/Cellar/open-jtalk/1.10_1/voice/mei/mei_normal.htsvoice']
+    speed = ['-r', '0.8']
+    outwav = ['-ow', 'ja_sound/ja_{}.wav'.format(num)]
+    cmd = open_jtalk + mech + htsvoice + speed + outwav
+    c = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+    c.stdin.write(t)
+    c.stdin.close()
+    c.wait()
+    # 音声を再生する場合
+    aplay = ['afplay', 'ja_sound/ja_{}.wav'.format(num)]
+    wr = subprocess.Popen(aplay)
+
+os.system('rm -rf ja_sound')
+os.system('mkdir ja_sound')
+for num in result_dict.keys():
+    jtalk(result_dict[num]['ja'].encode('utf-8'), num)
+    sleep(1)
