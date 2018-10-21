@@ -15,12 +15,6 @@ https://www.pyimagesearch.com/2016/04/11/finding-extreme-points-in-contours-with
 https://postd.cc/image-processing-101/
 
 
-------------------追加内容
-翻訳する単語のリストから1文字の単語，冠詞，不定詞，人称代名詞を除くようにしました．
-結果をresult_dictという辞書に格納させました．
-英語の発音をen_soundというディレクトリに保存できるようにしました．
-"""
-
 
 
 
